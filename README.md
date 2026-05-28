@@ -16,13 +16,16 @@ If your MCP tool calls work fine against Anthropic / OpenAI hosted APIs but die 
 
 ## What it fixes
 
-| Failure mode | llama.cpp issue | What this library does |
+These are **documented permanent limitations** of llama.cpp's `json-schema-to-grammar.cpp`, authoritatively listed in the [grammars README maintained by the converter's implementer](https://github.com/ochafik/llama.cpp/blob/master/grammars/README.md#json-schemas--gbnf). The cited issues are closed — not because they were fixed, but because they were accepted as won't-fix or fell out of triage. This library is the gateway-side workaround for that documented gap.
+
+| Failure mode | Upstream status | What this library does |
 |---|---|---|
-| `anyOf` (or `oneOf`) beside `properties` / `type` / `required` / `additionalProperties` | [#7703](https://github.com/ggml-org/llama.cpp/issues/7703) | Distribute siblings into each union branch, producing self-contained objects |
-| `{"not": {}}` sentinel from `zod-to-json-schema` | [#17574](https://github.com/ggml-org/llama.cpp/issues/17574) | Drop empty-`not` keywords; preserve non-empty `not` schemas |
-| Schemas with `$ref` pointing into `anyOf` nodes | (related to converter ref resolution) | Inline non-cyclic refs; preserve cyclic refs (llama.cpp handles cycles natively) |
-| Schemas that expand past `MAX_REPETITION_THRESHOLD = 2000` | [#21228](https://github.com/ggml-org/llama.cpp/issues/21228) | Coarsen inlines that would blow the budget instead of silently falling back to unconstrained generation ([#19051](https://github.com/ggml-org/llama.cpp/issues/19051)) |
-| Dangling `$ref` (paths that don't exist) — common `zod-to-json-schema` artifact when singleton unions collapse | (upstream schema bug) | **Replace with permissive `{}` so the request still completes.** See the load-bearing caveat below. |
+| `anyOf` (or `oneOf`) beside `properties` / `type` / `required` / `additionalProperties` | Documented limitation ([#7703](https://github.com/ggml-org/llama.cpp/issues/7703) — closed, covered by grammars/README.md) | Distribute siblings into each union branch, producing self-contained objects |
+| `{"not": {}}` sentinel from `zod-to-json-schema` | Closed with a LibreChat-side patch as the resolution ([#17574](https://github.com/ggml-org/llama.cpp/issues/17574)) | Drop empty-`not` keywords; preserve non-empty `not` schemas |
+| Nested `$ref`s into `anyOf` nodes | Documented limitation ([#8073](https://github.com/ggml-org/llama.cpp/issues/8073) — closed, still active in current builds) | Inline non-cyclic refs; preserve cyclic refs (llama.cpp handles cycles natively) |
+| Schemas that expand past `MAX_REPETITION_THRESHOLD = 2000` | Closed without fix ([#21228](https://github.com/ggml-org/llama.cpp/issues/21228), user-side workaround posted) | Coarsen inlines that would blow the budget |
+| llama-server silently falls back to unconstrained generation when grammar build fails | Closed as stale by bot ([#19051](https://github.com/ggml-org/llama.cpp/issues/19051) — still observable) | Pre-flight size budget + telemetry to make the silent fallback visible |
+| Dangling `$ref` (paths that don't exist) — common `zod-to-json-schema` artifact when singleton unions collapse | Upstream schema-generator bug | **Replace with permissive `{}` so the request still completes.** See the load-bearing caveat below. |
 
 ---
 

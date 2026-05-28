@@ -77,15 +77,20 @@ re-hoisting of pre-inlined duplicates (only needed if an upstream MCP
 server arrives with already-flattened schemas), `if`/`then`/`else`
 distribution, `prefixItems` handling.
 
-**Remove this hook when ANY of:**
-  - llama.cpp #7703 lands (anyOf-beside-properties handled in converter)
-  - llama.cpp #17574 lands (zod `not:{}` sentinel tolerated)
-  - llama.cpp's `$ref` resolution handles refs-into-anyOf nodes
-  - We migrate off llama.cpp grammar-constrained sampling entirely
-  - MCP servers we use start emitting the OpenAI strict-mode subset
+**Upstream status.** The failure modes this library addresses are
+**documented permanent limitations** of llama.cpp's grammar converter,
+authoritatively listed in
+https://github.com/ochafik/llama.cpp/blob/master/grammars/README.md#json-schemas--gbnf
+by the converter's implementer. The corresponding tracking issues
+(#7703, #8073, #17574, #19051, #21228) are all closed — not because
+they were fixed, but because they were accepted as won't-fix, closed
+with a downstream-only workaround, or stale-bot closed without
+resolution. There is no current upstream path to obsolete this hook;
+a successor grammar engine (xgrammar etc.) might eventually do so,
+but llama.cpp's own converter is unlikely to.
 
-See the README for the originating incident write-up and the upstream
-issues this hook works around.
+See the README for the originating incident write-up and links to the
+upstream documentation.
 """
 
 from __future__ import annotations
