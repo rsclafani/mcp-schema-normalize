@@ -1,5 +1,13 @@
 # mcp-schema-normalize
 
+*Bridge MCP tool schemas to llama.cpp's grammar-compatible subset.*
+
+[![CI](https://github.com/rsclafani/mcp-schema-normalize/actions/workflows/ci.yml/badge.svg)](https://github.com/rsclafani/mcp-schema-normalize/actions/workflows/ci.yml)
+[![PyPI version](https://img.shields.io/pypi/v/mcp-schema-normalize.svg)](https://pypi.org/project/mcp-schema-normalize/)
+[![Python versions](https://img.shields.io/pypi/pyversions/mcp-schema-normalize.svg)](https://pypi.org/project/mcp-schema-normalize/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 Normalize MCP / OpenAI-format tool JSON schemas into the narrower subset llama.cpp's grammar converter accepts. Bridges the standards gap between [MCP-mandated JSON Schema 2020-12 (SEP-1613)](https://modelcontextprotocol.io/seps/1613-establish-json-schema-2020-12-as-default-dialect-f) and what local grammar-constrained sampling backends actually compile.
 
 If your MCP tool calls work fine against Anthropic / OpenAI hosted APIs but die with `Unable to generate parser for this template` or `Error resolving ref … anyOf not in {…}` when routed through llama.cpp (`llama-server`, llama-swap, Ollama, etc.) — this library is for you.
