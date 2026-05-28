@@ -171,8 +171,13 @@ def _empty_telemetry() -> dict:
 #: (i.e. not a pass-through). Useful for integrations deciding whether
 #: to emit a per-request summary log.
 MODIFYING_KEYS: tuple[str, ...] = (
-    "anyof_rewrites", "oneof_rewrites", "not_drops", "empty_union_drops",
-    "refs_inlined", "cycles_preserved", "size_coarsenings",
+    "anyof_rewrites",
+    "oneof_rewrites",
+    "not_drops",
+    "empty_union_drops",
+    "refs_inlined",
+    "cycles_preserved",
+    "size_coarsenings",
 )
 
 #: Telemetry counters whose presence indicates a lossy/risky rewrite
@@ -180,8 +185,11 @@ MODIFYING_KEYS: tuple[str, ...] = (
 #: Integrations should escalate logs to WARN when any of these are
 #: non-zero so operators surface upstream schema bugs.
 LOSSY_KEYS: tuple[str, ...] = (
-    "empty_union_drops", "union_coexistence_skipped",
-    "size_coarsenings", "max_inline_depth_reached", "refs_unresolved",
+    "empty_union_drops",
+    "union_coexistence_skipped",
+    "size_coarsenings",
+    "max_inline_depth_reached",
+    "refs_unresolved",
 )
 
 # Back-compat alias used internally.
@@ -476,9 +484,7 @@ def _inline_ref(node: dict, ctx: WalkContext) -> Any:
 # ─── Phase A: anyOf-beside-siblings distribution + not-strip ────────────
 
 
-def _distribute_union_siblings(
-    node: dict, union_key: str, telemetry: dict
-) -> dict:
+def _distribute_union_siblings(node: dict, union_key: str, telemetry: dict) -> dict:
     """Rewrite ``{anyOf: [...], properties: {...}, ...}`` into
     ``{anyOf: [{...siblings + branch_i...}]}``."""
     siblings = {k: v for k, v in node.items() if k != union_key}
@@ -493,11 +499,15 @@ def _distribute_union_siblings(
             continue
         merged = dict(siblings)
         for k, v in branch.items():
-            if k == "properties" and isinstance(merged.get("properties"), dict) \
-                    and isinstance(v, dict):
+            if (
+                k == "properties"
+                and isinstance(merged.get("properties"), dict)
+                and isinstance(v, dict)
+            ):
                 merged["properties"] = _merge_properties(merged["properties"], v)
-            elif k == "required" and isinstance(merged.get("required"), list) \
-                    and isinstance(v, list):
+            elif (
+                k == "required" and isinstance(merged.get("required"), list) and isinstance(v, list)
+            ):
                 merged["required"] = _merge_required(merged["required"], v)
             else:
                 merged[k] = v
@@ -512,9 +522,12 @@ def _flatten_inner_union(branches: list, union_key: str) -> tuple[list, bool]:
     out: list = []
     changed = False
     for branch in branches:
-        if (isinstance(branch, dict) and len(branch) == 1
-                and union_key in branch
-                and isinstance(branch[union_key], list)):
+        if (
+            isinstance(branch, dict)
+            and len(branch) == 1
+            and union_key in branch
+            and isinstance(branch[union_key], list)
+        ):
             out.extend(branch[union_key])
             changed = True
         else:
@@ -559,8 +572,7 @@ def _walk(node: Any, ctx: WalkContext) -> Any:
     # Coexistence guard: `anyOf` + `oneOf` at the same level encode
     # 'must match anyOf AND match oneOf', which can't be distributed
     # without combinatorial fan-out or semantic change.
-    if all(uk in new_node and isinstance(new_node[uk], list)
-           for uk in _UNION_KEYS):
+    if all(uk in new_node and isinstance(new_node[uk], list) for uk in _UNION_KEYS):
         ctx.telemetry["union_coexistence_skipped"] += 1
         return new_node
 
@@ -581,9 +593,9 @@ def _walk(node: Any, ctx: WalkContext) -> Any:
             branches = flat
 
         filtered = [
-            b for b in branches
-            if not (isinstance(b, dict) and len(b) == 1
-                    and "not" in b and _empty_dict(b["not"]))
+            b
+            for b in branches
+            if not (isinstance(b, dict) and len(b) == 1 and "not" in b and _empty_dict(b["not"]))
         ]
         if len(filtered) != len(branches):
             ctx.telemetry["not_drops"] += len(branches) - len(filtered)
@@ -637,8 +649,7 @@ def normalize_schema(schema: Any) -> tuple[Any, dict]:
             "unresolvable $ref WARN lines rate-limited; %d more occurred "
             "(total refs_unresolved in telemetry)",
             suppressed,
-            extra={"suppressed": suppressed,
-                   "refs_unresolved_total": telemetry["refs_unresolved"]},
+            extra={"suppressed": suppressed, "refs_unresolved_total": telemetry["refs_unresolved"]},
         )
     return out, telemetry
 
@@ -654,9 +665,12 @@ def normalize_tools(tools: Any) -> tuple[Any, dict]:
 
     out_tools = []
     for tool in tools:
-        if not (isinstance(tool, dict) and tool.get("type") == "function"
-                and isinstance(tool.get("function"), dict)
-                and "parameters" in tool["function"]):
+        if not (
+            isinstance(tool, dict)
+            and tool.get("type") == "function"
+            and isinstance(tool.get("function"), dict)
+            and "parameters" in tool["function"]
+        ):
             out_tools.append(tool)
             continue
 
@@ -675,5 +689,3 @@ def normalize_tools(tools: Any) -> tuple[Any, dict]:
         out_tools.append(new_tool)
 
     return out_tools, aggregate
-
-

@@ -24,7 +24,6 @@ from mcp_schema_normalize import (
     resolve_pointer,
 )
 
-
 # ─── 1. anyOf-beside-properties rewrite ─────────────────────────────────
 
 
@@ -334,12 +333,16 @@ def test_three_level_anyof_nesting_flattens_completely():
     schema = {
         "properties": {"x": {"type": "string"}},
         "anyOf": [
-            {"anyOf": [
-                {"anyOf": [
-                    {"type": "string"},
-                    {"type": "number"},
-                ]},
-            ]},
+            {
+                "anyOf": [
+                    {
+                        "anyOf": [
+                            {"type": "string"},
+                            {"type": "number"},
+                        ]
+                    },
+                ]
+            },
         ],
     }
     out, _ = normalize_schema(schema)
@@ -528,27 +531,20 @@ def test_per_ref_warning_is_rate_limited_per_schema(caplog):
     one "rate-limited" summary noting how many more occurred. The
     telemetry counter (`refs_unresolved`) still counts all of them."""
     import logging as _logging
+
     from mcp_schema_normalize import MAX_PER_SCHEMA_REF_WARNINGS
 
     # Construct a schema with twice the cap of dangling refs.
     refs = MAX_PER_SCHEMA_REF_WARNINGS * 2
     schema = {
-        "properties": {
-            f"p{i}": {"$ref": f"#/$defs/Missing{i}"} for i in range(refs)
-        },
+        "properties": {f"p{i}": {"$ref": f"#/$defs/Missing{i}"} for i in range(refs)},
         "$defs": {},
     }
     with caplog.at_level(_logging.WARNING, logger="mcp_schema_normalize"):
         _, telemetry = normalize_schema(schema)
 
-    per_ref_warnings = [
-        r for r in caplog.records
-        if "unresolvable $ref replaced" in r.getMessage()
-    ]
-    rate_limit_summaries = [
-        r for r in caplog.records
-        if "rate-limited" in r.getMessage()
-    ]
+    per_ref_warnings = [r for r in caplog.records if "unresolvable $ref replaced" in r.getMessage()]
+    rate_limit_summaries = [r for r in caplog.records if "rate-limited" in r.getMessage()]
     # All refs counted in telemetry.
     assert telemetry["refs_unresolved"] == refs
     # Only MAX_PER_SCHEMA_REF_WARNINGS individual warns surfaced.
@@ -565,24 +561,32 @@ def test_summary_log_attaches_telemetry_as_structured_extra(caplog):
     message string."""
     import asyncio
     import logging as _logging
+
     from mcp_schema_normalize.integrations.litellm import normalize_tool_schemas_handler
 
-    tools = [{
-        "type": "function",
-        "function": {
-            "name": "t",
-            "parameters": {
-                "properties": {"x": {"type": "string"}},
-                "anyOf": [{"properties": {"a": {"type": "number"}}}],
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "t",
+                "parameters": {
+                    "properties": {"x": {"type": "string"}},
+                    "anyOf": [{"properties": {"a": {"type": "number"}}}],
+                },
             },
-        },
-    }]
+        }
+    ]
     data = {"model": "test-model", "tools": tools}
 
     with caplog.at_level(_logging.INFO, logger="mcp_schema_normalize.integrations.litellm"):
-        asyncio.run(normalize_tool_schemas_handler.async_pre_call_hook(
-            user_api_key_dict=None, cache=None, data=data, call_type="completion",
-        ))
+        asyncio.run(
+            normalize_tool_schemas_handler.async_pre_call_hook(
+                user_api_key_dict=None,
+                cache=None,
+                data=data,
+                call_type="completion",
+            )
+        )
 
     summary = next(r for r in caplog.records if "summary" in r.getMessage())
     # Counters present as LogRecord attributes for structured ingest.
@@ -599,6 +603,7 @@ def test_strict_unresolved_refs_leaves_ref_in_place():
     Provided as an OSS opt-out for operators who prefer hard-fail
     over silent degradation."""
     import mcp_schema_normalize._core as mod
+
     original = mod.STRICT_UNRESOLVED_REFS
     mod.STRICT_UNRESOLVED_REFS = True
     try:
@@ -691,11 +696,13 @@ def test_size_budget_overflow_triggers_coarsening():
     is logged via telemetry."""
     # Construct a schema that explodes when inlined: 50 refs to a
     # ref target that itself is a 50-branch anyOf.
-    big_target = {"anyOf": [{"type": "object", "properties": {f"k{i}": {"type": "string"}}} for i in range(50)]}
+    big_target = {
+        "anyOf": [
+            {"type": "object", "properties": {f"k{i}": {"type": "string"}}} for i in range(50)
+        ]
+    }
     schema = {
-        "properties": {
-            f"p{i}": {"$ref": "#/$defs/Big"} for i in range(50)
-        },
+        "properties": {f"p{i}": {"$ref": "#/$defs/Big"} for i in range(50)},
         "$defs": {"Big": big_target},
     }
     _, telemetry = normalize_schema(schema)
@@ -769,6 +776,7 @@ def test_normalize_tools_does_not_mutate_input():
         },
     ]
     import copy
+
     snapshot = copy.deepcopy(tools)
     normalize_tools(tools)
     assert tools == snapshot

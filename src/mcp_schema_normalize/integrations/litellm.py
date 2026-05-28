@@ -77,8 +77,11 @@ class NormalizeToolSchemasHandler(CustomLogger):
                     "model": data.get("model"),
                     "tools_modified": telemetry["tools_modified"],
                     "tools_seen": telemetry["tools_seen"],
-                    **{k: telemetry[k] for k in telemetry
-                       if k not in ("tools_modified", "tools_seen")},
+                    **{
+                        k: telemetry[k]
+                        for k in telemetry
+                        if k not in ("tools_modified", "tools_seen")
+                    },
                 },
             )
             data["tools"] = new_tools
