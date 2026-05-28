@@ -1,0 +1,69 @@
+name: Publish to PyPI
+
+# Tagged-release publishing via Trusted Publishing (OIDC).
+# - No API tokens; identity is verified by PyPI from the GitHub OIDC
+#   provider, scoped to this repo + workflow + environment.
+# - PyPI Pending Publisher must be configured before the first release
+#   tag is pushed; subsequent releases work automatically.
+#
+# Trigger: any tag matching `v*` (e.g. v0.1.0, v0.2.0-rc1).
+# The pyproject.toml version is the source of truth for what's published;
+# the tag and that version should match (the workflow does not enforce
+# this — pyproject.toml is the build's actual version).
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Build sdist + wheel
+        run: uv build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: build
+    # The `pypi` environment lets you (later) gate publishes behind
+    # required reviewers via Settings → Environments → pypi. For now
+    # the environment exists only to make the OIDC token scope match
+    # the Pending Publisher config.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mcp-schema-normalize
+    permissions:
+      # `id-token: write` is what allows the OIDC handshake with PyPI.
+      # No other permissions are needed for publishing.
+      id-token: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
