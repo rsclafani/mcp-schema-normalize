@@ -92,7 +92,16 @@ normalized, telemetry = normalize_tools(tools)
 
 ### LiteLLM proxy
 
-Register the hook in your `config.yaml`:
+Two steps: install the package into the proxy's Python environment, then register the hook in `config.yaml`.
+
+**Build a custom image** that includes the package:
+
+```dockerfile
+FROM ghcr.io/berriai/litellm:main-latest
+RUN pip install --no-cache-dir 'mcp-schema-normalize[litellm]'
+```
+
+**Register the hook** in your `config.yaml`:
 
 ```yaml
 litellm_settings:
@@ -101,7 +110,12 @@ litellm_settings:
     # ... any other callbacks (after this one)
 ```
 
-That's it — the hook will rewrite every tool's `function.parameters` in-flight on chat-completion, responses, and other tool-carrying calls. One INFO-level summary log per modified request, escalated to WARN if anything lossy fires. All telemetry counters land as structured `extra=` fields for log aggregators (Loki, Datadog, etc.) to index.
+The hook will rewrite every tool's `function.parameters` in-flight on chat-completion, responses, and other tool-carrying calls. One INFO-level summary log per modified request, escalated to WARN if anything lossy fires. All telemetry counters land as structured `extra=` fields for log aggregators (Loki, Datadog, etc.) to index.
+
+**See [`docs/litellm.md`](./docs/litellm.md)** for:
+- Running on a read-only / hardened LiteLLM container (volume-mount pattern)
+- Callback ordering against `strip_invalid_tools`, OTel, and other common callbacks
+- Troubleshooting (logs not appearing, hook not firing, etc.)
 
 ---
 
