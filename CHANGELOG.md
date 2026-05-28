@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-05-28
+
+### Changed
+- Removed the `email` field from `authors` metadata in `pyproject.toml`. The
+  `SECURITY.md` policy already documents the project's contact channels;
+  PyPI's project sidebar should not redundantly expose the maintainer's
+  personal email. No code changes; metadata-only release.
+
 ## [0.1.0] — 2026-05-28
 
 Initial extraction from a working LiteLLM deployment, where the hook unblocked an MCP server (paperclip) whose `zod-to-json-schema`-generated schemas were crashing local llama.cpp backends.

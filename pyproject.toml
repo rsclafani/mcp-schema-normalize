@@ -1,10 +1,10 @@
 [project]
 name = "mcp-schema-normalize"
-version = "0.1.0"
+version = "0.1.1"
 description = "Normalize MCP / OpenAI-format tool JSON schemas into the narrower subset llama.cpp's grammar converter accepts. Bridges the standards gap between MCP-mandated JSON Schema 2020-12 and what local grammar-constrained sampling backends actually compile."
 readme = "README.md"
 authors = [
-    { name = "Ross Sclafani", email = "rsclafani@gmail.com" },
+    { name = "Ross Sclafani" },
 ]
 license = { text = "MIT" }
 requires-python = ">=3.10"
