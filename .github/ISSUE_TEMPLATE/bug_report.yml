@@ -1,0 +1,81 @@
+name: Bug Report
+description: A schema this library should handle correctly is being mishandled.
+labels: ["bug", "needs-triage"]
+body:
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Inference backend
+      description: Which grammar-constrained backend is rejecting the schema?
+      options:
+        - llama.cpp (llama-server)
+        - Ollama
+        - llama-swap
+        - vLLM
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: gateway
+    attributes:
+      label: Gateway / proxy
+      description: How is the request routed?
+      options:
+        - LiteLLM proxy (via mcp_schema_normalize.integrations.litellm)
+        - Direct (calling normalize_schema/normalize_tools from my own code)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: lib-version
+    attributes:
+      label: mcp-schema-normalize version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: backend-version
+    attributes:
+      label: Inference backend version
+      description: "llama.cpp build (e.g. b9354), Ollama version, etc."
+    validations:
+      required: true
+
+  - type: textarea
+    id: schema
+    attributes:
+      label: Failing schema (minimal repro)
+      description: |
+        The `function.parameters` schema that triggers the bug.
+        Strip anything unrelated to the failure. Inline shape is more
+        useful than a link.
+      render: json
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error message from the backend
+      description: Exact text from llama.cpp / Ollama / etc.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: telemetry
+    attributes:
+      label: Telemetry returned by normalize_schema / normalize_tools
+      description: |
+        Run the failing schema through `normalize_schema(...)` directly
+        and paste the telemetry dict. This tells us exactly which
+        passes did or didn't fire.
+      render: python
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. actual behavior

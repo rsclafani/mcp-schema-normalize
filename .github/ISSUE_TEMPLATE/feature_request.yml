@@ -1,0 +1,26 @@
+name: Feature Request
+description: Propose a new capability — a schema pattern, a backend integration, or a telemetry/log surface improvement.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem this solves
+      description: What can't you do today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should the library do? Concrete API sketch welcome.
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This belongs in this library (not in LiteLLM core, llama.cpp, or the MCP server)
+        - label: This is a *normalization* concern, not a routing/proxy/serialization concern
+        - label: I'm willing to implement this with guidance

@@ -1,0 +1,70 @@
+[project]
+name = "mcp-schema-normalize"
+version = "0.1.0"
+description = "Normalize MCP / OpenAI-format tool JSON schemas into the narrower subset llama.cpp's grammar converter accepts. Bridges the standards gap between MCP-mandated JSON Schema 2020-12 and what local grammar-constrained sampling backends actually compile."
+readme = "README.md"
+authors = [
+    { name = "Ross Sclafani", email = "rsclafani@gmail.com" },
+]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "json-schema",
+    "llama.cpp",
+    "litellm",
+    "tool-calling",
+    "grammar",
+    "llm",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.optional-dependencies]
+# Optional LiteLLM CustomLogger integration. Install with
+# `pip install mcp-schema-normalize[litellm]` to use the
+# `NormalizeToolSchemasHandler` pre-call hook in a LiteLLM proxy.
+litellm = ["litellm>=1.0"]
+
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/rsclafani/mcp-schema-normalize"
+Repository = "https://github.com/rsclafani/mcp-schema-normalize"
+Issues = "https://github.com/rsclafani/mcp-schema-normalize/issues"
+Changelog = "https://github.com/rsclafani/mcp-schema-normalize/blob/main/CHANGELOG.md"
+
+[build-system]
+requires = ["uv_build>=0.9.22,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "mcp_schema_normalize"
+module-root = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
